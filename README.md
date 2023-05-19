@@ -1,4 +1,4 @@
-# Multiview Window
+# Url Fragments
 A plugin for the geocam-viewer.
 ### NPM Installation:
 ```
