@@ -6,8 +6,8 @@ export default defineConfig({
     build: {
         lib: {
             entry: resolve(__dirname, 'src/index.js'),
-            name: 'MultiviewWindow',
-            fileName: 'multiview-window',
+            name: 'urlFragments',
+            fileName: 'url-fragments',
           },
    }
 })
