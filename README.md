@@ -6,7 +6,7 @@ npm install 'https://gitpkg.now.sh/geocamxyz/plugin-url-fragments/src?v1.0.0'
 ```
 or for a particual commit version:
 ```
-npm install 'https://gitpkg.now.sh/geocamxyz/plugin-url-fragmentssrc?c7d31be'
+npm install 'https://gitpkg.now.sh/geocamxyz/plugin-url-fragmentssrc?25b9da6'
 ```
 ### Import Map (External Loading):
 ```
@@ -14,7 +14,7 @@ https://cdn.jsdelivr.net/gh/geocamxyz/plugin-url-fragments@v1.0.0/dist/url-fragm
 ```
 or for a particual commit version:
 ```
-https://cdn.jsdelivr.net/gh/geocamxyz/plugin-url-fragments@c7d31be/dist/url-fragments.js
+https://cdn.jsdelivr.net/gh/geocamxyz/plugin-url-fragments@25b9da6/dist/url-fragments.js
 ```
 ### Usage:
 The .js file can be imported into your .html file using the below code (This can be ignored if your using the NPM package).
