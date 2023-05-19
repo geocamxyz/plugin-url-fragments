@@ -1,0 +1,26 @@
+{
+  "name": "url-fragments",
+  "version": "1.0.0",
+  "homepage": "https://www.geocam.xyz",
+  "description": "Plugin for the Geocam viewer",
+  "author": {
+    "name": "GeoCam"
+  },
+  "keywords": [
+    "GeoCam",
+    "javascript",
+    "3D",
+    "2D",   
+    "visualization",
+    "spatial",
+    "data-driven",
+    "gis"
+  ],
+  "files": [
+    "indext.js",
+    "lib/**/*"
+  ],
+  "main": "index.js",
+  "license": "SEE LICENSE IN README.md",
+  "type": "module"
+}
