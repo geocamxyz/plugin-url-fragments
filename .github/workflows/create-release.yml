@@ -1,0 +1,55 @@
+name: Create Release Tag
+
+on:
+  push:
+    branches:
+      - main  # or the branch of your choice
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'  # or any version you prefer
+
+      - name: Extract version from package.json
+        id: package_version
+        run: echo "::set-output name=VERSION::$(node -p "require('./package.json').version")"
+
+      - name: Check if tag exists
+        id: check_tag
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { repo, owner } = context.repo;
+            const version = '${{ steps.package_version.outputs.VERSION }}';
+            const tag = `v${version}`;
+            const ref = await github.rest.git.getRef({
+              owner,
+              repo,
+              ref: `tags/${tag}`
+            }).catch(() => null);
+            if (ref) {
+              console.log(`Tag ${tag} already exists`);
+              return true;
+            } else {
+              console.log(`Tag ${tag} does not exist`);
+              return false;
+            }
+          result-encoding: string
+
+      - name: Create release if tag does not exist
+        if: steps.check_tag.outputs.result == 'false'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.package_version.outputs.VERSION }}
+          release_name: Release ${{ steps.package_version.outputs.VERSION }}
+          draft: false
+          prerelease: false
