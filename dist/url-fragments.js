@@ -4,7 +4,7 @@ const S = function(r = {}) {
   let n, c, l = "", u, d = {};
   const f = 100, p = function() {
     let e = s.toString();
-    e !== l && (l = e, console.log("pushing state", e), history.pushState(null, "", `#${e}`));
+    e !== l && (l = e, /* console.log("pushing state", e) */ history.pushState(null, "", `#${e}`));
   }, v = function() {
     clearTimeout(c), c = setTimeout(p, f);
   }, h = function() {

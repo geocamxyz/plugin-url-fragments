@@ -15,7 +15,7 @@ export const urlFragments = function (config = {}) {
     let hash = hashParams.toString();
     if (hash !== lastHash) {
       lastHash = hash;
-      console.log("pushing state", hash);
+      // console.log("pushing state", hash);
       history.pushState(null, "", `#${hash}`);
       // window.location.hash = `#${hash}`;
     }
