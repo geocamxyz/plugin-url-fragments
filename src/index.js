@@ -4,30 +4,44 @@ export class GeocamViewerUrlFragments extends HTMLElement {
   constructor() {
     super();
     this.plugin = null;
+    this.viewer = null;
     // this.yaw = this.getAttribute('yaw') || 0;
     console.log("url-fragments init");
   }
 
   connectedCallback() {
     console.log("url-fragments connected");
-    const node = this;
-    const parent = this.parentNode;
-    if (parent.viewer && parent.viewer.plugin) {
-      // Call a method on the parent
-      //  new urlFragments({stores: ['fov','facing','horizon','shot','sli','visible','left','top','width','height','mode','autorotate','autobrightness','zoom','center']}),
-      const params = this.getAttribute("params") || "";
-      const stores = params.split(",");
-      this.plugin = new urlFragments({ stores: stores });
-      parent.viewer.plugin(this.plugin);
-    } else {
+    const host = this.closest("geocam-viewer");
+    if (!host) {
       console.error(
         "GeocamViewerUrlFragments must be a child of GeocamViewer"
       );
+      return;
     }
+
+    const attach = () => {
+      const viewer = host.viewer;
+      if (viewer && typeof viewer.plugin === "function") {
+        if (this.plugin) return;
+        this.viewer = viewer;
+        const params = this.getAttribute("params") || "";
+        const stores = params.split(",");
+        this.plugin = new urlFragments({ stores });
+        this.viewer.plugin(this.plugin);
+      } else {
+        setTimeout(attach, 50);
+      }
+    };
+
+    attach();
   }
 
   disconnectedCallback() {
+    if (this.plugin && typeof this.plugin.destroy === "function") {
+      this.plugin.destroy();
+    }
     this.plugin = null;
+    this.viewer = null;
     console.log("url-fragments disconnected");
     // Clean up the viewer
   }
