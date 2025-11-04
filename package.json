@@ -1,7 +1,7 @@
 {
   "name": "url-fragments",
   "private": true,
-  "version": "2.2.5rc7",
+  "version": "2.2.5rc8",
   "type": "module",
   "scripts": {
     "build": "vite build"
