@@ -26,7 +26,21 @@ export class GeocamViewerUrlFragments extends HTMLElement {
         this.viewer = viewer;
         const params = this.getAttribute("params") || "";
         const stores = params.split(",");
-        this.plugin = new urlFragments({ stores });
+
+        // history="off" (also "false"/"none"/"0") stops view changes from
+        // leaving Back-button entries — the hash still updates so the URL stays
+        // copyable. Absent/anything else keeps history on. Use this on embedded
+        // iframes whose Back-button history belongs to the host page.
+        const historyAttr = (this.getAttribute("history") || "").toLowerCase();
+        const history = !["off", "false", "none", "0"].includes(historyAttr);
+
+        // Optional override for the pause (ms) that ends an interaction, i.e. how
+        // aggressively rapid changes collapse into a single history entry.
+        const settleDelay = parseInt(this.getAttribute("settle-delay"), 10);
+
+        const config = { stores, history };
+        if (!Number.isNaN(settleDelay)) config.settleDelay = settleDelay;
+        this.plugin = new urlFragments(config);
         this.viewer.plugin(this.plugin);
       } else {
         setTimeout(attach, 50);
