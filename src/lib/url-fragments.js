@@ -11,12 +11,29 @@ export const urlFragments = function (config = {}) {
 
   const DebounceTimeout = 100;
 
+  // Mirrors the CSP the viewer route sends —
+  // "frame-ancestors 'self' https://*.geocam.io" in geocam-pm
+  // app/controllers/viewer_controller.rb#allow_geocam_framing. Only a page that is
+  // allowed to embed the viewer is allowed to drive it.
+  const allowedOrigins = config.allowedOrigins || [
+    window.location.origin,
+    /^https:\/\/([\w-]+\.)*geocam\.io$/,
+  ];
+
+  const originAllowed = function (origin) {
+    return allowedOrigins.some((rule) =>
+      rule instanceof RegExp ? rule.test(origin) : rule === origin
+    );
+  };
+
   const updateHash = function () {
     let hash = hashParams.toString();
     if (hash !== lastHash) {
       lastHash = hash;
-      // console.log("pushing state", hash);
-      history.pushState(null, "", `#${hash}`);
+      // console.log("replacing state", hash);
+      // replaceState, not pushState: a view change is not a page the Back button
+      // should walk back through.
+      history.replaceState(null, "", `#${hash}`);
       // window.location.hash = `#${hash}`;
     }
   };
@@ -71,10 +88,15 @@ export const urlFragments = function (config = {}) {
   };
 
   const handleWindowMessage = function (event) {
+    if (!originAllowed(event.origin)) {
+      console.warn("urlFragments: ignoring message from origin", event.origin);
+      return;
+    }
     console.log("windowMessage", event);
-    const kind = event.data.message;
+    const kind = event.data && event.data.message;
     if (kind === "updateHash") {
-      window.location = event.data.value;
+      // replace, not assign: re-aiming the viewer must not add a history entry.
+      window.location.replace(event.data.value);
       // history.pushState({external: true}, '',  event.data.value)
     }
   };
@@ -87,12 +109,16 @@ export const urlFragments = function (config = {}) {
       subscribe(viewer.stores);
     });
     window.addEventListener("popstate", handleHistoryStateChanges);
+    // a fragment changed on an already-loaded page fires hashchange, not popstate —
+    // this is what lets an embedding page re-aim the iframe without a reload.
+    window.addEventListener("hashchange", handleHistoryStateChanges);
     window.addEventListener("message", handleWindowMessage);
   };
 
   this.destroy = function () {
-    window.removeEventListener("popstate", handleWindowMessage);
+    window.removeEventListener("message", handleWindowMessage);
     window.removeEventListener("popstate", handleHistoryStateChanges);
+    window.removeEventListener("hashchange", handleHistoryStateChanges);
     unsubNewStoreAdded();
   };
 };
