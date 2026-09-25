@@ -1,51 +1,64 @@
-const S = function(l = {}) {
+const k = function(r = {}) {
   let n = new URLSearchParams(window.location.hash.substr(1));
-  const o = l.stores || "*";
-  let s, c, r = "", u, d = {};
-  const m = 100, p = function() {
+  const o = r.stores || "*";
+  let s, d, a, l = !1, h = "", c, u = {};
+  const v = 100, f = r.history !== !1, b = r.settleDelay || 500, S = r.allowedOrigins || [
+    window.location.origin,
+    /^https:\/\/([\w-]+\.)*geocam\.io$/
+  ], T = function(e) {
+    return S.some(
+      (t) => t instanceof RegExp ? t.test(e) : t === e
+    );
+  }, L = function() {
     let e = n.toString();
-    e !== r && (r = e, history.pushState(null, "", `#${e}`));
-  }, v = function() {
-    clearTimeout(c), c = setTimeout(p, m);
-  }, h = function() {
+    e !== h && (h = e, f && !l ? (history.pushState(null, "", `#${e}`), l = !0) : history.replaceState(null, "", `#${e}`));
+  }, E = function() {
+    clearTimeout(d), d = setTimeout(L, v), f && (clearTimeout(a), a = setTimeout(() => {
+      l = !1;
+    }, b));
+  }, m = function() {
     for (let [e, t] of n.entries())
       if (o === "*" || o.includes(e)) {
         let i;
         try {
           i = JSON.parse(t);
-        } catch (a) {
-          if (a instanceof SyntaxError)
+        } catch (g) {
+          if (g instanceof SyntaxError)
             i = t, console.warn(
               `urlFragments: could not parse JSON value for ${e} in URL hash: ${t}`
             );
           else
-            throw a;
+            throw g;
         }
         s.stores[e] ? s.stores[e](i) : s.store(e, i);
       }
-  }, b = function(e) {
+  }, H = function(e) {
     for (let t in e)
-      if ((o === "*" || o.includes(t)) && !d[t]) {
+      if ((o === "*" || o.includes(t)) && !u[t]) {
         const i = e[t];
-        d[t] = i((a) => {
-          const g = JSON.stringify(a);
-          n.get(t) !== g && (n.set(t, g), v());
+        u[t] = i((g) => {
+          const y = JSON.stringify(g);
+          n.get(t) !== y && (n.set(t, y), E());
         });
       }
   }, w = function(e) {
-    n = new URLSearchParams(window.location.hash.substr(1)), h();
-  }, f = function(e) {
-    console.log("windowMessage", e), e.data.message === "updateHash" && (window.location = e.data.value);
+    n = new URLSearchParams(window.location.hash.substr(1)), m();
+  }, p = function(e) {
+    if (!T(e.origin)) {
+      console.warn("urlFragments: ignoring message from origin", e.origin);
+      return;
+    }
+    console.log("windowMessage", e), (e.data && e.data.message) === "updateHash" && (f ? window.location = e.data.value : window.location.replace(e.data.value));
   };
   this.init = function(e) {
-    s = e, h(), u = s.newstoreadded((t) => {
-      b(s.stores);
-    }), window.addEventListener("popstate", w), window.addEventListener("message", f);
+    s = e, m(), c = s.newstoreadded((t) => {
+      H(s.stores);
+    }), window.addEventListener("popstate", w), window.addEventListener("hashchange", w), window.addEventListener("message", p);
   }, this.destroy = function() {
-    window.removeEventListener("popstate", f), window.removeEventListener("popstate", w), u();
+    clearTimeout(d), clearTimeout(a), window.removeEventListener("message", p), window.removeEventListener("popstate", w), window.removeEventListener("hashchange", w), c();
   };
 };
-class y extends HTMLElement {
+class N extends HTMLElement {
   constructor() {
     super(), this.plugin = null, this.viewer = null, console.log("url-fragments init");
   }
@@ -63,8 +76,8 @@ class y extends HTMLElement {
       if (s && typeof s.plugin == "function") {
         if (this.plugin) return;
         this.viewer = s;
-        const r = (this.getAttribute("params") || "").split(",");
-        this.plugin = new S({ stores: r }), this.viewer.plugin(this.plugin);
+        const a = (this.getAttribute("params") || "").split(","), l = (this.getAttribute("history") || "").toLowerCase(), h = !["off", "false", "none", "0"].includes(l), c = parseInt(this.getAttribute("settle-delay"), 10), u = { stores: a, history: h };
+        Number.isNaN(c) || (u.settleDelay = c), this.plugin = new k(u), this.viewer.plugin(this.plugin);
       } else
         setTimeout(o, 50);
     };
@@ -76,8 +89,8 @@ class y extends HTMLElement {
 }
 window.customElements.define(
   "geocam-viewer-url-fragments",
-  y
+  N
 );
 export {
-  y as GeocamViewerUrlFragments
+  N as GeocamViewerUrlFragments
 };
